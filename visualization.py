@@ -38,6 +38,14 @@ def visualize_streamlines(X, Y, Z, Ux, Uy, Uz, speed, R, L, flow_type, output_di
     grid["Uz"] = Uz.ravel(order="F")
     grid["speed"] = speed.ravel(order="F")
 
+    vec = np.column_stack((
+        Ux.ravel(order="F"),
+        Uy.ravel(order="F"),
+        Uz.ravel(order="F"),
+    ))
+    grid["vectors"] = vec
+    grid.set_active_vectors("vectors")
+
     n_seeds_radial = 4
     n_seeds_circ = 8
     angles = np.linspace(0, 2 * np.pi, n_seeds_circ, endpoint=False)
@@ -51,13 +59,15 @@ def visualize_streamlines(X, Y, Z, Ux, Uy, Uz, speed, R, L, flow_type, output_di
             seed_points.append([sx, sy, z_seed])
     seed_points = np.array(seed_points)
 
+    source = pv.PolyData(seed_points)
     streamlines = grid.streamlines_from_source(
-        pv.PolyData(seed_points),
-        vectors=["Ux", "Uy", "Uz"],
+        source,
         integrator_type=45,
-        max_length=0.5,
+        integration_direction="forward",
         initial_step_length=0.0005,
         max_step_length=0.01,
+        max_length=20,
+        max_steps=50000,
         progress_bar=False,
     )
 
@@ -66,6 +76,9 @@ def visualize_streamlines(X, Y, Z, Ux, Uy, Uz, speed, R, L, flow_type, output_di
         uy = streamlines["Uy"]
         uz = streamlines["Uz"]
         streamlines["speed"] = np.sqrt(ux**2 + uy**2 + uz**2)
+        print(f"      已生成 {streamlines.n_points} 个流线点")
+    else:
+        print("      [WARNING] 未生成任何流线，请检查种子点位置和速度场")
 
     n_theta = 80
     n_z = 2
@@ -89,9 +102,13 @@ def visualize_streamlines(X, Y, Z, Ux, Uy, Uz, speed, R, L, flow_type, output_di
         p.add_mesh(streamlines, scalars="speed",
                    cmap="jet", render_lines_as_tubes=True,
                    line_width=3, scalar_bar_args={"title": "Speed (m/s)",
-                                                   "height": 0.4,
-                                                   "position_x": 0.05,
-                                                   "position_y": 0.3})
+                                                   "vertical": True,
+                                                   "height": 0.5,
+                                                   "width": 0.08,
+                                                   "position_x": 0.88,
+                                                   "position_y": 0.25,
+                                                   "label_font_size": 14,
+                                                   "title_font_size": 16})
     p.add_axes(xlabel="X (m)", ylabel="Y (m)", zlabel="Z (m)")
     p.camera_position = "xz"
     p.camera.azimuth = 45

@@ -1,24 +1,24 @@
 import numpy as np
 
 
-def compute_velocity_field(X, Y, Z, R, L, flow_type, params):
+def compute_velocity_field(Z, R, L, flow_type, params, r, theta, inside):
     """
     根据 flow_type 计算自定义速度场。
 
     参数：
-        X, Y, Z: 三维坐标数组，单位 m
+        Z: Z 坐标数组，单位 m
         R: 试管半径，单位 m
         L: 试管长度，单位 m
         flow_type: 流场类型字符串
         params: 流场参数字典
+        r: 预计算的半径数组，单位 m
+        theta: 预计算的极角数组，单位 rad
+        inside: 预计算的圆柱内部布尔掩膜
 
     返回：
         Ux, Uy, Uz: 笛卡尔坐标系下的三维速度分量，单位 m/s
         speed: 速度大小，单位 m/s
     """
-    r = np.sqrt(X**2 + Y**2)
-    theta = np.arctan2(Y, X)
-    inside = r <= R
 
     if flow_type == "axial":
         Ur, Utheta, Uz = _compute_axial(r, inside, R, params)

@@ -35,7 +35,7 @@ def main():
 
     print("[2/6] 计算自定义速度场 ...")
     Ux, Uy, Uz, speed = compute_velocity_field(
-        X, Y, Z, R, L, flow_type, params
+        Z, R, L, flow_type, params, r, theta, inside
     )
     print(f"      速度范围: {speed[speed > 0].min()*1e3:.3f} ~ "
           f"{speed.max()*1e3:.3f} mm/s")
